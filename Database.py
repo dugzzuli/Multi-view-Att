@@ -34,7 +34,7 @@ def load_data():
     return iris.data,iris.target
 
 def load_3sources():
-    dataMat=sio.loadmat('dataset/3sources.mat')
+    dataMat=sio.loadmat('Dataset/3sources.mat')
     data=dataMat['data']
     target=dataMat['truelabel']
     dataR=[]
@@ -43,7 +43,7 @@ def load_3sources():
     return dataR,target[0,0]
 
 def load_BBCSport():
-    dataMat=sio.loadmat('dataset/BBCSport.mat')
+    dataMat=sio.loadmat('Dataset/BBCSport.mat')
     data=dataMat['data']
     target=dataMat['truelabel']
     dataR=[]
@@ -52,7 +52,7 @@ def load_BBCSport():
     return dataR,target[0,0]
 
 def load_BBC():
-    dataMat=sio.loadmat('dataset/BBC.mat')
+    dataMat=sio.loadmat('Dataset/BBC.mat')
     data=dataMat['data']
     target=dataMat['truelabel']
     dataR=[]
@@ -90,7 +90,7 @@ if __name__ == "__main__":
     train_data=MyDataset2Viewer(data[0],data[1],target)
     train_loader = DataLoader(train_data, shuffle=False, batch_size=13, drop_last=True)
 
-    for d,d2,l in train_loader:
+    for d in train_loader:
         print(d.float().size())
 
 

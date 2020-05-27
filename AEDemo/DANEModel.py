@@ -3,52 +3,49 @@ from torch import nn, optim
 from torch.utils.data import DataLoader
 import numpy as np
 from torch import nn,optim
+
 from Database import load_data,load_3sources
 
 
-class SemanticAttention(nn.Module):
-    def __init__(self, in_size, hidden_size=128):
-        super(SemanticAttention, self).__init__()
 
-        self.project = nn.Sequential(
-            nn.Linear(in_size, hidden_size),
-            nn.Tanh(),
-            nn.Linear(hidden_size, 1, bias=False)
-        )
+class AutoEncoder(nn.Module):
+    def __init__(self,input_dim):
+        super(AutoEncoder, self).__init__()
 
-    def forward(self, z):
-        w = self.project(z)
-        beta = torch.softmax(w, dim=1)
-
-        return (beta * z).sum(1)
+        self.encoder = nn.Sequential(nn.Linear(input_dim, 256),
+                                     nn.LeakyReLU(0.2,True),
+                                     nn.Linear(256, 64),
+                                     nn.LeakyReLU(0.2, True),
+                                     nn.Linear(64, 16))
 
 
-class autoencoder(nn.Module):
-    def __init__(self):
-        super(autoencoder, self).__init__()
-
-        self.encoder = nn.Sequential(nn.Linear(13, 128),
-                                     nn.ReLU(True),
-                                     nn.Linear(128, 64),
-                                     nn.ReLU(True),
-                                     nn.Linear(64, 12),
-                                     nn.ReLU(True),
-                                     nn.Linear(12, 3))
-
-
-        self.decoder = nn.Sequential(nn.Linear(3, 12),
-                                     nn.ReLU(True),
-                                     nn.Linear(12, 64),
-                                     nn.ReLU(True),
-                                     nn.Linear(64, 128),
-                                     nn.ReLU(True),
-                                     nn.Linear(128, 13)
+        self.decoder = nn.Sequential(nn.Linear(16, 64),
+                                     nn.LeakyReLU(0.2,True),
+                                     nn.Linear(64, 256),
+                                     nn.LeakyReLU(0.2,True),
+                                     nn.Linear(256, input_dim)
                                     )
+
     def forward(self, x):
         encode = self.encoder(x)
         decode = self.decoder(encode)
         return encode, decode
 
+class DANEMV(nn.Module):
+    def __init__(self,dims):
+        super(DANEMV, self).__init__()
+
+        self.viewsList=nn.ModuleList()
+        for dim in dims:
+            self.viewsList.append(AutoEncoder(dim))
+    def forward(self, gs):
+        encodeList=[]
+        decodeList = []
+        for i, g in enumerate(gs):
+            encode, decode=self.viewsList[i](g)
+            encodeList.append(encode)
+            decodeList.append(decode)
+        return encodeList,decodeList
 
 if __name__ == "__main__":
     # data,target=load_data()
